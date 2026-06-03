@@ -12,10 +12,10 @@ def login():
         senha = request.form["senha"]
 
         conexao = conectar()
-        cursor = conexao.cursor(dictionary=True)
+        cursor = conexao.cursor()
 
         cursor.execute(
-            "SELECT * FROM usuarios WHERE email = %s AND senha = %s",
+            "SELECT * FROM usuarios WHERE email = ? AND senha = ?",
             (email, senha)
         )
 
@@ -43,7 +43,7 @@ def dashboard():
         return redirect("/")
 
     conexao = conectar()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor()
 
     cursor.execute("SELECT COUNT(*) AS total FROM funcionarios")
     total_funcionarios = cursor.fetchone()["total"]
@@ -83,7 +83,7 @@ def funcionarios():
         cursor = conexao.cursor()
 
         cursor.execute(
-            "INSERT INTO funcionarios (nome, email, setor, cargo) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO funcionarios (nome, email, setor, cargo) VALUES (?, ?, ?, ?)",
             (nome, email, setor, cargo)
         )
 
@@ -95,7 +95,7 @@ def funcionarios():
         return redirect("/funcionarios")
 
     conexao = conectar()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor()
 
     cursor.execute("SELECT * FROM funcionarios")
     lista_funcionarios = cursor.fetchall()
@@ -119,7 +119,7 @@ def excluir_funcionario(id):
     cursor = conexao.cursor()
 
     cursor.execute(
-        "DELETE FROM funcionarios WHERE id = %s",
+        "DELETE FROM funcionarios WHERE id = ?",
         (id,)
     )
 
@@ -137,7 +137,7 @@ def editar_funcionario(id):
         return "Acesso negado. Apenas administradores podem acessar esta página."
 
     conexao = conectar()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor()
 
     if request.method == "POST":
         nome = request.form["nome"]
@@ -146,7 +146,7 @@ def editar_funcionario(id):
         cargo = request.form["cargo"]
 
         cursor.execute(
-            "UPDATE funcionarios SET nome = %s, email = %s, setor = %s, cargo = %s WHERE id = %s",
+            "UPDATE funcionarios SET nome = ?, email = ?, setor = ?, cargo = ? WHERE id = ?",
             (nome, email, setor, cargo, id)
         )
 
@@ -156,7 +156,7 @@ def editar_funcionario(id):
 
         return redirect("/funcionarios")
 
-    cursor.execute("SELECT * FROM funcionarios WHERE id = %s", (id,))
+    cursor.execute("SELECT * FROM funcionarios WHERE id = ?", (id,))
     funcionario = cursor.fetchone()
 
     cursor.close()
@@ -172,7 +172,7 @@ def horarios():
         return "Acesso negado. Apenas administradores podem acessar esta página."
 
     conexao = conectar()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor()
 
     if request.method == "POST":
         horario_inicio = request.form["horario_inicio"]
@@ -180,7 +180,7 @@ def horarios():
         limite = request.form["limite"]
 
         cursor.execute(
-            "INSERT INTO horarios (horario_inicio, horario_fim, limite_funcionarios) VALUES (%s, %s, %s)",
+            "INSERT INTO horarios (horario_inicio, horario_fim, limite_funcionarios) VALUES (?, ?, ?)",
             (horario_inicio, horario_fim, limite)
         )
 
@@ -211,7 +211,7 @@ def escala():
         return "Acesso negado. Apenas administradores podem acessar esta página."
 
     conexao = conectar()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor()
 
     if request.method == "POST":
         funcionario_id = request.form["funcionario_id"]
@@ -219,7 +219,7 @@ def escala():
         data = request.form["data"]
 
         cursor.execute(
-            "INSERT INTO escala_almoco (funcionario_id, horario_id, data) VALUES (%s, %s, %s)",
+            "INSERT INTO escala_almoco (funcionario_id, horario_id, data) VALUES (?, ?, ?)",
             (funcionario_id, horario_id, data)
         )
 
@@ -267,7 +267,7 @@ def logout():
 def relatorio_escala():
 
     conexao = conectar()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor()
 
     data_filtro = request.form.get("data_filtro")
 
@@ -283,7 +283,7 @@ def relatorio_escala():
             FROM escala_almoco
             JOIN funcionarios ON escala_almoco.funcionario_id = funcionarios.id
             JOIN horarios ON escala_almoco.horario_id = horarios.id
-            WHERE escala_almoco.data = %s
+            WHERE escala_almoco.data = ?
             ORDER BY horarios.horario_inicio
         """, (data_filtro,))
     else:
@@ -316,7 +316,7 @@ def relatorio_escala():
 def calendario():
 
     conexao = conectar()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor()
 
     cursor.execute("""
         SELECT 
@@ -346,7 +346,7 @@ def minha_escala():
     email_usuario = session["usuario"]
 
     conexao = conectar()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor()
 
     cursor.execute("""
         SELECT 
@@ -359,7 +359,7 @@ def minha_escala():
         FROM escala_almoco
         JOIN funcionarios ON escala_almoco.funcionario_id = funcionarios.id
         JOIN horarios ON escala_almoco.horario_id = horarios.id
-        WHERE funcionarios.email = %s
+        WHERE funcionarios.email = ?
         ORDER BY escala_almoco.data, horarios.horario_inicio
     """, (email_usuario,))
 

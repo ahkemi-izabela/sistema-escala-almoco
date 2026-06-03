@@ -1,10 +1,6 @@
-import mysql.connector
+import sqlite3
 
 def conectar():
-    conexao = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="kemily123",
-        database="sistema_escala"
-    )
+    conexao = sqlite3.connect("sistema_escala.db")
+    conexao.row_factory = sqlite3.Row
     return conexao
